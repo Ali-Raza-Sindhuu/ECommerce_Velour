@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   authModal: null,
+  LoginPreFill : "",
   isCartOpen: false,
   isSearchOpen: false,
 };
@@ -31,6 +32,12 @@ const uiSlice = createSlice({
     closeSearch: (state) => {
       state.isSearchOpen = false;
     },
+    setLoginPreFill : (state, action) => {
+      state.LoginPreFill = action.payload;
+    },
+    clearLoginPreFill : (state) => {
+      state.LoginPreFill = ""
+    }
   },
 });
 
@@ -42,6 +49,8 @@ export const {
   closeCart,
   openSearch,
   closeSearch,
+  setLoginPreFill,
+  clearLoginPreFill
 } = uiSlice.actions;
 
 export default uiSlice.reducer;
