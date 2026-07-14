@@ -5,3 +5,8 @@ export const signUpRequest = async (userData) => {
 
     return response.data
 }
+
+export const loginRequest = async (userData) => {
+    const response = await apiClient.post('/auth/login', userData)
+    return response.data;
+}

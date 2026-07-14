@@ -9,6 +9,10 @@ import Contact from "./pages/Contact";
 import Blog from "./pages/Blog";
 import ScrollToTop from "./components/ScrollToTop";
 import ProductDetails from "./pages/ProductDetails";
+import ProtectedRoute from "./components/protection/ProtectedRoute";
+import Dashboard from "./components/user/Dashboard";
+import AdminRoute from "./components/protection/AdminRoute";
+import { AdminDashboard } from "./components/admin/AdminDashboard";
 
 const App = () => {
   return (
@@ -24,6 +28,19 @@ const App = () => {
           <Route path='/contact' element={<Contact/>} />
           <Route path="/blog" element={<Blog/>} /> 
         </Route>
+
+        <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard/>
+            </ProtectedRoute>
+        }/>
+
+        <Route path="/adminDashboard" element={
+          <AdminRoute>
+            <AdminDashboard/>
+          </AdminRoute>
+        } />
+        
       </Routes>
     </BrowserRouter>
   );

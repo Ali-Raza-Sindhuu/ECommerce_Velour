@@ -5,11 +5,15 @@ import { openSignUp } from "../../store/slice/Uislice";
 import { useState } from "react";
 import { FacebookIcon, GithubIcon, GoogleIcon } from "../Icons/SocialIcons";
 import { SocialButton } from "./SignUp";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../../features/auth/authThunks";
 
 const Login = () => {
   const dispatch = useDispatch();
   const preFillEmail = useSelector((state) => state.ui.LoginPreFill)
-  // console.log("Login", preFillEmail)
+  
+  const navigate = useNavigate()
+  
   const [formData, setFormData] = useState({
     email: preFillEmail || "",
     password: "",
@@ -23,6 +27,21 @@ const Login = () => {
     }));
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const resultAction = await dispatch(loginUser(formData))
+
+    if(loginUser.fulfilled.match(resultAction)){
+        console.log(resultAction.payload);
+const user = resultAction.payload.data.user;
+      if(user.role == 'ADMIN'){
+        navigate('/admin/dahboard')
+      }else{
+        navigate('/dashboard')
+      }
+    }
+  }
   return (
     <>
       <div className="mb-6 text-center">
@@ -32,7 +51,7 @@ const Login = () => {
         <p className="mt-1 text-sm text-gray-500">Log in to continue</p>
       </div>
 
-      <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+      <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
           <label
             htmlFor="email"
@@ -76,6 +95,7 @@ const Login = () => {
         </div>
 
         <button
+        // onClick={handleSubmit}
           type="submit"
           className="w-full rounded-xl bg-gray-900 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800"
         >
