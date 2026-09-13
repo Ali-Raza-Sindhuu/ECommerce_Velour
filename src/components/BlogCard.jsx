@@ -1,8 +1,10 @@
 import { Calendar1, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const BlogCard = ({ blog, large = false }) => {
   return (
-    <div
+    <Link
+      to={`/blog/${blog.slug}`}
       className={`flex rounded-2xl overflow-hidden ${large ? "h-[400px]" : "h-[200px]"}`}
     >
       <div className="w-1/2 flex-shrink-0 cursor-pointer overflow-hidden">
@@ -38,7 +40,7 @@ const BlogCard = ({ blog, large = false }) => {
           </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 

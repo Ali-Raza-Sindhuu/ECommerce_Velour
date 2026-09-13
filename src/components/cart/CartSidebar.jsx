@@ -1,10 +1,12 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { removeFromCart, updateQuantity } from "../../features/cart/cartSlice";
 
 const CartSidebar = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const items = useSelector((state) => state.cart?.items) || [];
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -144,8 +146,23 @@ const CartSidebar = ({ isOpen, onClose }) => {
                     ${subtotal.toFixed(2)}
                   </span>
                 </div>
-                <button className="w-full rounded-xl bg-gray-900 py-3 text-sm font-medium text-white transition hover:bg-gray-800">
+                <button
+                  onClick={() => {
+                    onClose();
+                    navigate("/checkout");
+                  }}
+                  className="w-full rounded-xl bg-gray-900 py-3 text-sm font-medium text-white transition hover:bg-gray-800"
+                >
                   Checkout
+                </button>
+                <button
+                  onClick={() => {
+                    onClose();
+                    navigate("/cart");
+                  }}
+                  className="mt-2 w-full text-center text-xs font-medium text-gray-500 underline hover:text-gray-900"
+                >
+                  View full bag
                 </button>
               </div>
             )}

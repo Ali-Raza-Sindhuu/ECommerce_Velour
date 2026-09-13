@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Sparkles,
   Shirt,
@@ -10,9 +10,11 @@ import {
   Lock,
   Truck,
   RotateCcw,
+  Heart,
 } from "lucide-react";
 import { products } from "../data/products";
 import { addToCart } from "../features/cart/cartSlice";
+import { toggleWishlist } from "../features/wishlist/wishlistSlice";
 import { openCart } from "../store/slice/Uislice";
 
 const parsePrice = (value) =>
@@ -77,6 +79,8 @@ const ProductDetails = ({
   const { slug } = useParams();
   const dispatch = useDispatch();
   const [activeImage, setActiveImage] = useState(0);
+  const wishlistItems = useSelector((state) => state.wishlist?.items) || [];
+  const isWishlisted = wishlistItems.includes(slug);
 
   const product = products.find((item) => item.slug === slug);
 
@@ -202,12 +206,25 @@ const ProductDetails = ({
                   {product.description}
                 </p>
               )}
+            <div className="flex items-center gap-3">
               <button
                 onClick={handleAddToBag}
                 className="group relative inline-flex w-fit items-center justify-center overflow-hidden rounded-full bg-black px-8 py-3.5 text-[15px] font-medium text-white transition-all hover:bg-black/90 active:scale-[0.97]"
               >
                 <span className="relative z-10">Add to Bag</span>
               </button>
+              <button
+                onClick={() => dispatch(toggleWishlist(product.slug))}
+                aria-label="Toggle wishlist"
+                className={`flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full ring-1 transition-all active:scale-[0.97] ${
+                  isWishlisted
+                    ? "bg-black text-white ring-black"
+                    : "bg-white text-black ring-black/10 hover:ring-black/30"
+                }`}
+              >
+                <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
+              </button>
+            </div>
             </div>
 
             {/* Specs */}
