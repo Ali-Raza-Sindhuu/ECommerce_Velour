@@ -30,6 +30,9 @@ const Navbar = () => {
   const authModal = useSelector((state) => state.ui.authModal);
   const isCartOpen = useSelector((state) => state.ui.isCartOpen);
   const isSearchOpen = useSelector((state) => state.ui.isSearchOpen);
+  const cartCount = useSelector((state) =>
+    (state.cart?.items || []).reduce((sum, item) => sum + item.quantity, 0),
+  );
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 const whiteNavbarPages = ["/checkout", "/cart", "/product", "/shop/:slug"];
@@ -125,10 +128,15 @@ const navbarSolid = isWhiteNavbar || isScrolled || isMobileMenuOpen;
             </button>
             <button
               onClick={() => dispatch(openCart())}
-              className={iconClass()}
+              className={`relative ${iconClass()}`}
               aria-label="Open cart"
             >
               <Handbag size={16} />
+              {cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#c9a96e] px-1 text-[10px] font-semibold text-white">
+                  {cartCount}
+                </span>
+              )}
             </button>
             <button
               onClick={() => dispatch(openLogin())}

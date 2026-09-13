@@ -1,7 +1,7 @@
 // import { useState } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
-import { openSignUp } from "../../store/slice/Uislice";
+import { openSignUp, closeAuth } from "../../store/slice/Uislice";
 import { useState } from "react";
 import { FacebookIcon, GithubIcon, GoogleIcon } from "../Icons/SocialIcons";
 import { SocialButton } from "./SignUp";
@@ -33,10 +33,10 @@ const Login = () => {
     const resultAction = await dispatch(loginUser(formData))
 
     if(loginUser.fulfilled.match(resultAction)){
-        console.log(resultAction.payload);
-const user = resultAction.payload.data.user;
-      if(user.role == 'ADMIN'){
-        navigate('/admin/dahboard')
+      const user = resultAction.payload.data.user;
+      dispatch(closeAuth());
+      if(user.role === 'ADMIN'){
+        navigate('/adminDashboard')
       }else{
         navigate('/dashboard')
       }

@@ -1,13 +1,40 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Minus, Plus, Trash2 } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { removeFromCart, updateQuantity } from "../../features/cart/cartSlice";
 
 const CartSidebar = ({ isOpen, onClose }) => {
+  const dispatch = useDispatch();
   const items = useSelector((state) => state.cart?.items) || [];
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
+
+  const handleDecrease = (item) =>
+    dispatch(
+      updateQuantity({
+        id: item.id,
+        size: item.size,
+        color: item.color,
+        quantity: item.quantity - 1,
+      }),
+    );
+
+  const handleIncrease = (item) =>
+    dispatch(
+      updateQuantity({
+        id: item.id,
+        size: item.size,
+        color: item.color,
+        quantity: item.quantity + 1,
+      }),
+    );
+
+  const handleRemove = (item) =>
+    dispatch(
+      removeFromCart({ id: item.id, size: item.size, color: item.color }),
+    );
 
   return (
     <AnimatePresence>
@@ -54,19 +81,20 @@ const CartSidebar = ({ isOpen, onClose }) => {
               ) : (
                 <div className="space-y-5">
                   {items.map((item) => (
-                    <div key={item.id} className="flex gap-4">
+                    <div key={`${item.id}-${item.size ?? ""}-${item.color ?? ""}`} className="flex gap-4">
                       <img
                         src={item.image}
-                        alt={item.name}
+                        alt={item.title}
                         className="h-20 w-16 rounded-xl object-cover"
                       />
                       <div className="flex flex-1 flex-col">
                         <div className="flex items-start justify-between">
                           <p className="text-sm font-medium text-gray-900">
-                            {item.name}
+                            {item.title}
                           </p>
                           <button
                             aria-label="Remove item"
+                            onClick={() => handleRemove(item)}
                             className="text-gray-400 hover:text-gray-700"
                           >
                             <Trash2 size={16} />
@@ -81,6 +109,7 @@ const CartSidebar = ({ isOpen, onClose }) => {
                           <div className="flex items-center gap-3 rounded-full border border-gray-200 px-2 py-1">
                             <button
                               aria-label="Decrease quantity"
+                              onClick={() => handleDecrease(item)}
                               className="text-gray-500 hover:text-gray-900"
                             >
                               <Minus size={14} />
@@ -90,6 +119,7 @@ const CartSidebar = ({ isOpen, onClose }) => {
                             </span>
                             <button
                               aria-label="Increase quantity"
+                              onClick={() => handleIncrease(item)}
                               className="text-gray-500 hover:text-gray-900"
                             >
                               <Plus size={14} />

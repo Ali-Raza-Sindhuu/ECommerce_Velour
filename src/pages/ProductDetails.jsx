@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import {
   Sparkles,
   Shirt,
@@ -11,6 +12,11 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { products } from "../data/products";
+import { addToCart } from "../features/cart/cartSlice";
+import { openCart } from "../store/slice/Uislice";
+
+const parsePrice = (value) =>
+  typeof value === "number" ? value : parseFloat(String(value).replace(/[^0-9.]/g, "")) || 0;
 
 // ─── Feature Card ──────────────────────────────────────────────────────────
 const FeatureCard = ({ icon, title, description }) => (
@@ -67,10 +73,9 @@ const DEFAULT_FEATURES = [
 const ProductDetails = ({
   features = DEFAULT_FEATURES,
   breadcrumbBase = "/shop",
-  ctaLabel = "Order Now",
-  ctaTo, // optional override; defaults to /order/:slug
 }) => {
   const { slug } = useParams();
+  const dispatch = useDispatch();
   const [activeImage, setActiveImage] = useState(0);
 
   const product = products.find((item) => item.slug === slug);
@@ -86,8 +91,21 @@ const ProductDetails = ({
     );
   }
 
-  const images = product.images?.length ? product.images : [product.image];
-  const resolvedCtaTo = ctaTo ?? `/order/${product.slug}`;
+  const images = [product.img1, product.img2].filter(Boolean);
+
+  const handleAddToBag = () => {
+    dispatch(
+      addToCart({
+        id: product.slug,
+        slug: product.slug,
+        title: product.title,
+        price: parsePrice(product.price),
+        image: images[0],
+        quantity: 1,
+      }),
+    );
+    dispatch(openCart());
+  };
 
   return (
     <section className="min-h-screen bg-white">
@@ -98,7 +116,7 @@ const ProductDetails = ({
             <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-[#f8f8f8]">
               <img
                 src={images[activeImage]}
-                alt={product.name}
+                alt={product.title}
                 className="h-full w-full object-cover object-center"
               />
               {product.badge && (
@@ -125,7 +143,7 @@ const ProductDetails = ({
                   >
                     <img
                       src={img}
-                      alt={`${product.name} view ${index + 1}`}
+                      alt={`${product.title} view ${index + 1}`}
                       className="h-full w-full object-cover object-center"
                     />
                     {activeImage === index && (
@@ -159,7 +177,7 @@ const ProductDetails = ({
 
             {/* Title */}
             <h1 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.05] tracking-[-0.03em] text-black">
-              {product.name}
+              {product.title}
             </h1>
 
             {/* Pricing */}
@@ -184,12 +202,12 @@ const ProductDetails = ({
                   {product.description}
                 </p>
               )}
-              <Link
-                to={resolvedCtaTo}
+              <button
+                onClick={handleAddToBag}
                 className="group relative inline-flex w-fit items-center justify-center overflow-hidden rounded-full bg-black px-8 py-3.5 text-[15px] font-medium text-white transition-all hover:bg-black/90 active:scale-[0.97]"
               >
-                <span className="relative z-10">{ctaLabel}</span>
-              </Link>
+                <span className="relative z-10">Add to Bag</span>
+              </button>
             </div>
 
             {/* Specs */}
