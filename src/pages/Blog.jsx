@@ -57,7 +57,7 @@ const Blog = () => {
                 {featured && <BlogCard blog={featured} large />}
                 {rest.length > 0 && (
                   <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                    {rest.map((blog, i) => (
+                    {rest.map((blog) => (
                       <BlogCard key={blog.slug} blog={blog} />
                     ))}
                   </div>
