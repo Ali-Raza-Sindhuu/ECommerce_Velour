@@ -1,5 +1,4 @@
 import BestSeller from "../components/sections/BestSeller";
-import BlogSection from "../components/sections/BlogSection";
 import CollectionSection from "../components/sections/CollectionSection";
 import HeroSection from "../components/sections/HeroSection";
 import ProductSection from "../components/sections/ProductSection";
@@ -31,7 +30,6 @@ const Home = () => {
       <CollectionSection />
       <ReviewSection />
       <StyleWearSection />
-      <BlogSection />
     </>
   );
 };

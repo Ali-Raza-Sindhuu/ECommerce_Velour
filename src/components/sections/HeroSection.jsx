@@ -1,8 +1,19 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  useMotionValue,
+} from "framer-motion";
+
+// Easing curve used across the hero — matches the "Unveil" choreography.
+const EASE = [0.22, 1, 0.36, 1];
 
 const HeroSection = ({
   image = "",
+  secondaryImage = "",
   badge,
   heading,
   subtext,
@@ -12,10 +23,11 @@ const HeroSection = ({
   secondaryLabel = "Contact us",
   mode = "hero",
   showScrollCue = true,
+  indexLabel = "01",
+  totalLabel = "05",
   children,
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const sectionRef = useRef(null);
 
   useEffect(() => {
@@ -23,146 +35,172 @@ const HeroSection = ({
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    if (mode !== "hero") return;
-    const handleMouseMove = (e) => {
-      if (!sectionRef.current || window.innerWidth < 1024) return;
-      const rect = sectionRef.current.getBoundingClientRect();
-      const x = (e.clientX - rect.left - rect.width / 2) / rect.width;
-      const y = (e.clientY - rect.top - rect.height / 2) / rect.height;
-      setMousePos({ x: x * 10, y: y * 10 });
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [mode]);
+  // ─── SCROLL CHOREOGRAPHY (hero mode only) — "Editorial Grid Motion" ────
+  // Grid fragments separate apart at different scroll-speed ratios, like
+  // pulling apart a folded magazine page.
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
 
-  // ─── HERO MODE (REDESIGNED) ─────────────────────────────────────────────
+  const mainImageY = useTransform(scrollYProgress, [0, 1], [0, -70]);
+  const secondaryImageY = useTransform(scrollYProgress, [0, 1], [0, -140]);
+  const headlineY = useTransform(scrollYProgress, [0, 1], [0, -40]);
+  const labelY = useTransform(scrollYProgress, [0, 1], [0, -110]);
+  const gridOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
+
+  // Magnetic hover for the micro-labels ("SCROLL", index number) — labels
+  // nudge 4–6px toward the cursor when it's nearby. Local to this section,
+  // desktop only, independent of the global mouse tracker below.
+  const magnetX = useMotionValue(0);
+  const magnetY = useMotionValue(0);
+  const springMagnetX = useSpring(magnetX, { stiffness: 250, damping: 18 });
+  const springMagnetY = useSpring(magnetY, { stiffness: 250, damping: 18 });
+
+  const handleMagnetMove = (e) => {
+    if (window.innerWidth < 1024) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - (rect.left + rect.width / 2);
+    const y = e.clientY - (rect.top + rect.height / 2);
+    magnetX.set(x * 0.3);
+    magnetY.set(y * 0.3);
+  };
+  const handleMagnetLeave = () => {
+    magnetX.set(0);
+    magnetY.set(0);
+  };
+
+
+  // Split the heading into lines so each line can mask-up independently,
+  // staggered 80ms apart. Falls back gracefully if heading has no natural
+  // line breaks — it will simply animate as a single line.
+  const headingLines = useMemo(
+    () => (heading ? heading.split("\n").filter(Boolean) : []),
+    [heading]
+  );
+
+  // ─── HERO MODE — "EDITORIAL GRID MOTION" ───────────────────────────────
   if (mode === "hero") {
     return (
       <section
         ref={sectionRef}
-        className="relative flex min-h-[100dvh] w-full overflow-hidden bg-[#050505]"
+        className="relative flex min-h-[100dvh] w-full items-center overflow-hidden bg-[#F5F3EF] py-24 lg:py-0"
       >
-        {/* Full-bleed background image with subtle zoom on load */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src={image}
-            alt=""
-            className={`h-full w-full object-cover transition-all duration-[1.4s] ease-out ${
-              isLoaded ? "scale-100 opacity-100" : "scale-110 opacity-0"
-            }`}
-            style={{
-              transform: isLoaded
-                ? `translate(${mousePos.x * -0.5}px, ${mousePos.y * -0.5}px) scale(1)`
-                : "scale(1.1)",
-              transition: "transform 0.6s ease-out, opacity 1.4s ease-out",
-            }}
-            onLoad={() => setIsLoaded(true)}
+        {/* Grid lines — draw in first (1px, thin), establishing the editorial frame */}
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0 hidden lg:block"
+          style={{ opacity: gridOpacity }}
+        >
+          <motion.div
+            className="absolute left-[8%] top-0 h-full w-px bg-neutral-900/10 origin-top"
+            initial={{ scaleY: 0 }}
+            animate={isLoaded ? { scaleY: 1 } : {}}
+            transition={{ duration: 0.3, ease: "easeOut" }}
           />
-        </div>
+          <motion.div
+            className="absolute left-[62%] top-0 h-full w-px bg-neutral-900/10 origin-top"
+            initial={{ scaleY: 0 }}
+            animate={isLoaded ? { scaleY: 1 } : {}}
+            transition={{ duration: 0.3, delay: 0.05, ease: "easeOut" }}
+          />
+          <motion.div
+            className="absolute top-[14%] left-0 h-px w-full bg-neutral-900/10 origin-left"
+            initial={{ scaleX: 0 }}
+            animate={isLoaded ? { scaleX: 1 } : {}}
+            transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
+          />
+        </motion.div>
 
-        {/* Gradient overlays for text readability */}
-        <div
-          className="absolute inset-0 z-[1]"
-          style={{
-            background:
-              "linear-gradient(to right, rgba(5,5,5,0.85) 0%, rgba(5,5,5,0.5) 45%, rgba(5,5,5,0.2) 70%, transparent 100%)",
-          }}
-        />
-        <div
-          className="absolute inset-0 z-[1]"
-          style={{
-            background:
-              "linear-gradient(to top, rgba(5,5,5,0.7) 0%, transparent 40%)",
-          }}
-        />
-        {/* Bottom fade for scroll transition */}
-        <div
-          className="absolute bottom-0 left-0 right-0 z-[1] h-32"
-          style={{
-            background:
-              "linear-gradient(to top, rgba(5,5,5,0.8) 0%, transparent 100%)",
-          }}
-        />
+        {/* Index / season marker — top-left, oversized detail with monospace texture */}
+        <motion.div
+          className="absolute left-6 top-8 z-10 sm:left-10 lg:left-[9%] lg:top-10"
+          style={{ y: labelY }}
+          initial={{ opacity: 0 }}
+          animate={isLoaded ? { opacity: 1 } : {}}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
+          <motion.div
+            className="flex items-baseline gap-1 font-mono text-[11px] tracking-[0.15em] text-neutral-500"
+            style={{ x: springMagnetX, y: springMagnetY }}
+            onMouseMove={handleMagnetMove}
+            onMouseLeave={handleMagnetLeave}
+          >
+            <span className="text-neutral-900">{indexLabel}</span>
+            <span className="text-neutral-400"> / {totalLabel}</span>
+          </motion.div>
+        </motion.div>
 
-        {/* Content container - left aligned, vertically centered */}
-        <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col justify-center px-6 pt-20 sm:px-10 lg:px-16 xl:px-20">
-          <div className="max-w-xl lg:max-w-2xl">
-            {/* Badge */}
-            {badge && (
-              <div
-                className={`mb-8 inline-flex items-center gap-2.5 rounded-full border border-white/10 px-1.5 py-1.5 backdrop-blur-md transition-all duration-700 ${
-                  isLoaded
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-4 opacity-0"
-                }`}
-                style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.06)",
-                  transitionDelay: "150ms",
-                }}
-              >
-                <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-900">
-                  {badge.label}
-                </span>
-                <span className="pr-3 text-[11px] font-medium text-white/70">
-                  {badge.text}
-                </span>
-              </div>
-            )}
+        {/* Editorial micro-label, e.g. collection/season */}
+        {badge && (
+          <motion.div
+            className="absolute right-6 top-8 z-10 font-mono text-[10px] uppercase tracking-[0.22em] text-neutral-500 sm:right-10 lg:right-[9%] lg:top-10"
+            onMouseMove={handleMagnetMove}
+            onMouseLeave={handleMagnetLeave}
+            style={{ x: springMagnetX, y: springMagnetY }}
+            initial={{ opacity: 0 }}
+            animate={isLoaded ? { opacity: 1 } : {}}
+            transition={{ duration: 0.4, delay: 0.25 }}
+          >
+            {badge.label} {badge.text}
+          </motion.div>
+        )}
 
-            {/* Heading - massive, tight leading */}
-            <h1
-              className={`font-display text-balance text-[clamp(2.8rem,7vw,6.5rem)] font-bold leading-[0.95] tracking-[-0.03em] text-white transition-all duration-1000 ${
-                isLoaded
-                  ? "translate-y-0 opacity-100"
-                  : "translate-y-8 opacity-0"
-              }`}
-              style={{ transitionDelay: "300ms" }}
-            >
-              {heading}
+
+        {/* Content grid: asymmetric 3-column layout */}
+        <div className="relative z-[2] mx-auto grid w-full max-w-[1600px] grid-cols-1 gap-x-8 gap-y-10 px-6 sm:px-10 lg:grid-cols-12 lg:gap-y-0 lg:px-[6%]">
+          {/* Headline block — spans left columns, overlaps the image edge on desktop */}
+          <motion.div
+            className="order-2 flex flex-col justify-center lg:order-1 lg:col-span-6 lg:pr-8 lg:pt-24"
+            style={{ y: headlineY }}
+          >
+            <h1 className="font-display text-balance text-[clamp(2.6rem,6.5vw,5.5rem)] font-medium leading-[0.98] tracking-[-0.02em] text-neutral-900">
+              {(headingLines.length ? headingLines : [heading]).map(
+                (line, i) => (
+                  <span key={i} className="block overflow-hidden">
+                    <motion.span
+                      className="block"
+                      initial={{ clipPath: "inset(0 100% 0 0)" }}
+                      animate={
+                        isLoaded ? { clipPath: "inset(0 0% 0 0)" } : {}
+                      }
+                      transition={{
+                        duration: 0.6,
+                        delay: 0.5 + i * 0.1,
+                        ease: EASE,
+                      }}
+                    >
+                      {line}
+                    </motion.span>
+                  </span>
+                )
+              )}
             </h1>
 
-            {/* Accent line */}
-            <div
-              className={`my-8 h-[2px] w-20 rounded-full bg-white/20 transition-all duration-700 ${
-                isLoaded ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
-              }`}
-              style={{
-                transitionDelay: "500ms",
-                transformOrigin: "left",
-              }}
-            />
-
-            {/* Subtext */}
             {subtext && (
-              <p
-                className={`max-w-md text-[15px] leading-[1.7] text-white/50 transition-all duration-700 ${
-                  isLoaded
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-4 opacity-0"
-                }`}
-                style={{ transitionDelay: "550ms" }}
+              <motion.p
+                className="mt-6 max-w-sm text-[14px] leading-[1.7] text-neutral-500"
+                initial={{ y: 12, opacity: 0 }}
+                animate={isLoaded ? { y: 0, opacity: 1 } : {}}
+                transition={{ duration: 0.5, delay: 0.9, ease: EASE }}
               >
                 {subtext}
-              </p>
+              </motion.p>
             )}
 
-            {/* CTA Buttons */}
-            <div
-              className={`mt-10 flex flex-col gap-3 sm:flex-row sm:items-center ${
-                isLoaded
-                  ? "translate-y-0 opacity-100"
-                  : "translate-y-4 opacity-0"
-              }`}
-              style={{ transitionDelay: "700ms" }}
+            <motion.div
+              className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3"
+              initial={{ y: 12, opacity: 0 }}
+              animate={isLoaded ? { y: 0, opacity: 1 } : {}}
+              transition={{ duration: 0.5, delay: 1.0, ease: EASE }}
             >
               <Link
                 to={primaryLink}
-                className="group inline-flex items-center gap-2.5 rounded-full bg-white px-8 py-3.5 text-[13px] font-semibold text-neutral-900 transition-all duration-300 hover:bg-neutral-100 hover:shadow-[0_0_40px_rgba(255,255,255,0.12)] active:scale-[0.97]"
+                className="group inline-flex items-center gap-2.5 border-b border-neutral-900 pb-1 text-[13px] font-medium uppercase tracking-[0.08em] text-neutral-900 transition-colors duration-300"
               >
                 {primaryLabel}
                 <svg
-                  className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1"
+                  className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-1"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -177,52 +215,68 @@ const HeroSection = ({
               </Link>
               <Link
                 to={secondaryLink}
-                className="inline-flex items-center justify-center rounded-full border border-white/15 px-8 py-3.5 text-[13px] font-medium text-white/60 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/5 hover:text-white/90 active:scale-[0.97]"
+                onMouseMove={handleMagnetMove}
+                onMouseLeave={handleMagnetLeave}
+                className="text-[12px] font-mono uppercase tracking-[0.1em] text-neutral-400 transition-colors duration-300 hover:text-neutral-900"
               >
-                {secondaryLabel}
+                — {secondaryLabel}
               </Link>
-            </div>
+            </motion.div>
+          </motion.div>
 
-            {/* Scroll cue */}
-            {showScrollCue && (
-              <div
-                className={`mt-16 hidden items-center gap-3 lg:flex transition-all duration-700 ${
-                  isLoaded ? "opacity-100" : "opacity-0"
-                }`}
-                style={{ transitionDelay: "900ms" }}
-              >
-                <div className="h-10 w-px overflow-hidden bg-white/15">
-                  <div
-                    className="h-full w-full bg-white/50"
-                    style={{
-                      animation: "scrollDown 2.2s ease-in-out infinite",
-                    }}
-                  />
-                </div>
-                <span className="text-[10px] uppercase tracking-[0.2em] text-white/25">
-                  Scroll
-                </span>
-              </div>
-            )}
-          </div>
+          {/* Main image — bleeds off the top edge, uncontained, magazine-style */}
+          <motion.div
+            className="relative order-1 -mt-10 aspect-[4/5] w-full overflow-hidden lg:order-2 lg:col-span-6 lg:-mt-24 lg:aspect-auto lg:h-[86vh]"
+            style={{ y: mainImageY }}
+          >
+            <motion.img
+              src={image}
+              alt=""
+              onLoad={() => setIsLoaded(true)}
+              initial={{ scale: 1.05, opacity: 0 }}
+              animate={isLoaded ? { scale: 1, opacity: 1 } : {}}
+              transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
+              className="h-full w-full object-cover"
+            />
+          </motion.div>
+
+          {/* Secondary image fragment — small, offset, bottom-right of the composition */}
+          {secondaryImage && (
+            <motion.div
+              className="relative order-3 -mt-16 ml-auto aspect-[3/4] w-[45%] max-w-[220px] overflow-hidden self-end sm:w-[35%] lg:absolute lg:bottom-[8%] lg:left-[8%] lg:col-span-2 lg:mt-0 lg:w-[16%] lg:max-w-none"
+              style={{ y: secondaryImageY }}
+            >
+              <motion.img
+                src={secondaryImage}
+                alt=""
+                initial={{ scale: 1.05, opacity: 0 }}
+                animate={isLoaded ? { scale: 1, opacity: 1 } : {}}
+                transition={{ duration: 0.7, delay: 0.4, ease: EASE }}
+                className="h-full w-full object-cover"
+              />
+            </motion.div>
+          )}
         </div>
 
-        {/* Decorative floating glass element (desktop only) */}
-        <div
-          className={`pointer-events-none absolute right-[10%] top-1/4 z-[2] hidden h-56 w-56 rounded-full lg:block ${
-            isLoaded ? "opacity-100" : "opacity-0"
-          }`}
-          style={{
-            background:
-              "radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%)",
-            backdropFilter: "blur(60px)",
-            transform: `translate(${mousePos.x * -2}px, ${
-              mousePos.y * -2
-            }px)`,
-            transition: "transform 0.5s ease-out, opacity 1s ease-out",
-            transitionDelay: "opacity 200ms",
-          }}
-        />
+        {/* Scroll cue — editorial footnote style, bottom-center */}
+        {showScrollCue && (
+          <motion.div
+            className="absolute bottom-8 left-1/2 z-10 hidden -translate-x-1/2 items-center gap-3 lg:flex"
+            initial={{ opacity: 0 }}
+            animate={isLoaded ? { opacity: 1 } : {}}
+            transition={{ duration: 0.4, delay: 1.2 }}
+          >
+            <div className="h-8 w-px overflow-hidden bg-neutral-900/15">
+              <div
+                className="h-full w-full bg-neutral-900/50"
+                style={{ animation: "scrollDown 2.2s ease-in-out infinite" }}
+              />
+            </div>
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-400">
+              Scroll
+            </span>
+          </motion.div>
+        )}
 
         <style>{`
           @keyframes scrollDown {

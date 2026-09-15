@@ -6,8 +6,6 @@ import Shops from "./pages/Shops";
 import Collection from "./pages/Collection";
 import MainLayout from "./components/layout/MainLayout";
 import Contact from "./pages/Contact";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
 import ScrollToTop from "./components/ScrollToTop";
 import ProductDetails from "./pages/ProductDetails";
 import ProtectedRoute from "./components/protection/ProtectedRoute";
@@ -36,8 +34,6 @@ const App = () => {
           <Route path="/shop/:slug" element={<ProductDetails/>} />
           <Route path="/collections" element={<Collection />} />
           <Route path='/contact' element={<Contact/>} />
-          <Route path="/blog" element={<Blog/>} />
-          <Route path="/blog/:slug" element={<BlogPost/>} />
           <Route path="/cart" element={<CartPage/>} />
           <Route path="/checkout" element={<Checkout/>} />
           <Route path="/order-success/:orderId" element={<OrderSuccess/>} />
