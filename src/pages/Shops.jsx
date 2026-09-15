@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import HeroSection from "../components/sections/HeroSection";
 import SampleProduct from "../components/SampleProduct";
 import hero01 from "../assets/shopHero.avif";
 import { products as ALL_PRODUCTS } from "../data/products";

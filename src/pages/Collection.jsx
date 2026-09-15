@@ -1,4 +1,3 @@
-import HeroSection from "../components/sections/HeroSection";
 import { ArrowRight } from "lucide-react";
 import hero01 from "../assets/collectionHero.jpg";
 import CollectionStory from "../components/sections/CollectionStory";

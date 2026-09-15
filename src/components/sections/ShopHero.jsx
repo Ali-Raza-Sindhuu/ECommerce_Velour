@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Pin } from "lucide-react";
+import { Search } from "lucide-react";
 
 export const MarkedPhoto = ({ src, alt = "", className = "", code }) => (
    <div className={`relative ${className}`}>
@@ -47,7 +47,7 @@ export const ShopHero = ({ swatches = [], onSearch }) => {
   };
 
   const board = swatches.length >= 4 ? swatches.slice(0, 4) : [];
-  const rotations = ["-rotate-3", "rotate-2", "-rotate-1", "rotate-3"];
+//   const rotations = ["-rotate-3", "rotate-2", "-rotate-1", "rotate-3"];
 
   return (
     <div className="relative overflow-hidden bg-[#f4f2ec] px-4 pb-10 pt-10 sm:px-6 sm:pb-14 sm:pt-14 md:px-10 lg:px-16 xl:px-28">
