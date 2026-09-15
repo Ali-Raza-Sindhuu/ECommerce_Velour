@@ -13,7 +13,6 @@ import {
 import AuthModal from "../auth/AuthModal";
 import CartSidebar from "../cart/CartSidebar";
 import SearchModal from "../searchModal";
-import { BsFacebook, BsInstagram, BsTwitter } from "react-icons/bs";
 
 const NAV_LINKS = [
   { name: "HOME", path: "/" },
