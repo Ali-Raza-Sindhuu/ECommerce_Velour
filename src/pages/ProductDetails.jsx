@@ -155,41 +155,51 @@ const ReviewsSection = ({ product, rating, reviews }) => {
   const breakdown = ratingBreakdown(product.slug);
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-8">
       <h2 className="text-xl font-semibold tracking-[-0.02em] text-black sm:text-2xl">
         Reviews ({reviews.toLocaleString()})
       </h2>
 
-      {/* Summary */}
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-12">
-        <div className="flex shrink-0 flex-col items-start gap-1.5">
-          <span className="text-4xl font-bold text-black">{rating}</span>
-          <RatingStars rating={rating} size={15} />
-          <span className="text-xs text-black/45">
-            Based on {reviews.toLocaleString()} reviews
-          </span>
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-12">
+        {/* Rating summary */}
+        <div className="flex w-full flex-col gap-6 sm:flex-row sm:items-center sm:gap-10 lg:w-[45%] lg:flex-col lg:items-start lg:gap-6">
+          <div className="flex shrink-0 flex-col items-start gap-1.5">
+            <span className="text-4xl font-bold text-black">{rating}</span>
+
+            <RatingStars rating={rating} size={15} />
+
+            <span className="text-xs text-black/45">
+              Based on {reviews.toLocaleString()} reviews
+            </span>
+          </div>
+
+          <div className="flex w-full max-w-md flex-col gap-2">
+            {breakdown.map((row) => (
+              <div key={row.stars} className="flex items-center gap-3">
+                <span className="w-3 text-xs text-black/50">
+                  {row.stars}
+                </span>
+
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/10">
+                  <div
+                    className="h-full rounded-full bg-black"
+                    style={{ width: `${row.pct}%` }}
+                  />
+                </div>
+
+                <span className="w-8 text-right text-xs text-black/40">
+                  {row.pct}%
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="flex w-full max-w-md flex-col gap-2">
-          {breakdown.map((row) => (
-            <div key={row.stars} className="flex items-center gap-3">
-              <span className="w-3 text-xs text-black/50">{row.stars}</span>
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/10">
-                <div
-                  className="h-full rounded-full bg-black"
-                  style={{ width: `${row.pct}%` }}
-                />
-              </div>
-              <span className="w-8 text-right text-xs text-black/40">
-                {row.pct}%
-              </span>
-            </div>
-          ))}
+        {/* Write review form */}
+        <div className="w-full lg:w-[55%] lg:-mt-20">
+          <WriteReview />
         </div>
       </div>
-
-      {/* Write a review */}
-      <WriteReview />
     </div>
   );
 };
@@ -519,7 +529,7 @@ const ProductDetails = ({ breadcrumbBase = "/shop" }) => {
         </div>
 
         {/* ─── Reviews (full width, own breathing room) ────────────────── */}
-        <div className="mt-16 border-t border-black/10 pt-14 sm:mt-20 sm:pt-16">
+        <div className="mt-16 border-t border-black/10 pt-10 sm:mt-16 sm:pt-12">
           <ReviewsSection product={product} rating={rating} reviews={reviews} />
         </div>
 

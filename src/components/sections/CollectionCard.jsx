@@ -42,44 +42,62 @@ const CollectionCard = () => {
           ctaLink="/collections"
         />
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 lg:gap-5 xl:gap-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 sm:gap-7 lg:gap-6 xl:gap-7">
           {COLLECTIONS.map((col, i) => (
-            <div
-              key={i}
-              className="group relative overflow-hidden rounded-2xl cursor-pointer aspect-[3/4] sm:aspect-[4/5] lg:aspect-[3/4]"
-            >
-              <img
-                src={col.image}
-                alt={col.name}
-                className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-              />
+            <Link key={i} to="/collections" className="group block">
+              <div className="relative overflow-hidden rounded-t-2xl bg-black/5 aspect-[4/5] sm:aspect-[5/6] lg:aspect-[4/5]">
+                <img
+                  src={col.image}
+                  alt={col.name}
+                  className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                />
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                {/* just enough shade for the top label to sit on the photo */}
+                <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/40 to-transparent" />
 
-              <span className="absolute left-3 top-3 rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm sm:left-4 sm:top-4">
-                {col.tag}
-              </span>
+                <div className="absolute left-3.5 top-3.5 flex items-center gap-2 sm:left-4 sm:top-4">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#c9a96e]" />
+                  <span className="font-mono text-[10px] tracking-[0.15em] text-white/85">
+                    {col.tag}
+                  </span>
+                </div>
 
-              <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-4 sm:p-5 md:p-6">
-                <span className="font-mono text-[10px] tracking-widest text-white/50 uppercase sm:text-xs">
+                <span className="absolute right-3.5 top-3.5 font-mono text-[10px] text-white/50 sm:right-4 sm:top-4">
+                  0{i + 1}
+                </span>
+              </div>
+
+              {/* card face — info lives here, not stacked on the photo */}
+              <div className="relative rounded-b-2xl border border-t-0 border-black/8 bg-white px-5 py-5 sm:px-6 sm:py-6">
+                <div
+                  className="pointer-events-none absolute inset-x-5 top-0 h-px sm:inset-x-6"
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(90deg, rgba(0,0,0,0.18) 0, rgba(0,0,0,0.18) 4px, transparent 4px, transparent 8px)",
+                  }}
+                />
+
+                <span className="font-mono text-[10px] uppercase tracking-widest text-black/35">
                   {col.label}
                 </span>
 
-                <h4 className="font-display text-xl font-medium tracking-tight text-white sm:text-2xl lg:text-[1.65rem]">
+                <h4 className="mt-2 font-display text-xl font-medium tracking-tight text-black sm:text-2xl">
                   {col.name}
                 </h4>
 
-                <p className="text-xs leading-relaxed text-white/65 sm:text-sm">
+                <p className="mt-2 text-[13px] leading-relaxed text-black/50 sm:text-sm">
                   {col.desc}
                 </p>
 
-                <Link to='/collections'>
-                <button className="mt-2 inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-medium text-black transition hover:bg-white/90 sm:mt-3">
-                  Explore <ArrowRight size={12} />
-                </button>
-                </Link>
+                <span className="mt-4 inline-flex w-fit items-center gap-1.5 text-[13px] font-medium text-black transition-colors group-hover:text-black/60">
+                  Explore collection
+                  <ArrowRight
+                    size={13}
+                    className="transition-transform group-hover:translate-x-1"
+                  />
+                </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
